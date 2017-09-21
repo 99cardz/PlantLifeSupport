@@ -1,9 +1,9 @@
-int water_level_analog_in = A0;
-int supply_pump = 11;
-int air_pump = 12;
+int water_level_analog_in = A1;
+int supply_pump = 3; // PIN 3 
+int air_pump = 6; //PIN 2
 int air_pump_interval = 10;
 int floating_switch = 10;
-int pump_on_time = 10; //sec
+int pump_on_time = 5; //sec
 
 int water_level_analog_reading = 0;
 int water_level_count = 0;
@@ -12,9 +12,11 @@ long air_pump_counter = 0;
 int air_pump_state = LOW;
 void setup() {
         Serial.begin(9600);
+        pinMode(air_pump, OUTPUT);
         pinMode(supply_pump, OUTPUT);
         pinMode(floating_switch, OUTPUT);
-        digitalWrite(floating_switch, HIGH);
+        digitalWrite(floating_switch, LOW);
+        digitalWrite(9, HIGH);
 }
 void serial() {
         Serial.print(timer);  Serial.println(" timer");
@@ -27,15 +29,15 @@ void serial() {
         
 }
 void loop() {
-        digitalWrite(floating_switch, LOW);
-        water_level_analog_reading = analogRead(water_level_analog_in);
-  	water_level_analog_reading = analogRead(water_level_analog_in);
         digitalWrite(floating_switch, HIGH);
-        if (water_level_analog_reading < 700) {water_level_count ++;}
+        water_level_analog_reading = analogRead(water_level_analog_in);
+      	water_level_analog_reading = analogRead(water_level_analog_in);
+        digitalWrite(floating_switch, LOW);
+        if (water_level_analog_reading < 10) {water_level_count ++;}
         else { water_level_count = 0; }
         serial();
-        //Serial.println(analogRead(water_level_analog_in));
-        if (water_level_count >= 20) {
+        if (water_level_count >= 20) { //Turn on supply Pump
+          digitalWrite(air_pump, LOW);
           digitalWrite(supply_pump, HIGH);
           delay(pump_on_time * 1000);
           digitalWrite(supply_pump, LOW);
@@ -43,20 +45,20 @@ void loop() {
         }
         
         
-        
-        if (timer == air_pump_interval + air_pump_counter && air_pump_state == LOW) {
+        if (timer == air_pump_interval + air_pump_counter && air_pump_state == LOW) {  //Turn on Air Pump
           air_pump_state = HIGH;
           analogWrite(air_pump, 255);
           air_pump_counter = timer;
         }
-        else if (timer == air_pump_interval + air_pump_counter && air_pump_state == HIGH) {
+        else if (timer == air_pump_interval + air_pump_counter && air_pump_state == HIGH) {  //Trun off Air Pump
           air_pump_state = LOW;
           analogWrite(air_pump, 0);
           air_pump_counter = timer;
         }
+
         
         timer ++;
-        if (timer == 1200) {
+        if (timer == 1200) { //Reset Timer
           timer = 0;
           air_pump_counter = 0;
         }
